@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Oficial de Validación - Reconocimiento Musical</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --navy: #000000;
+            --gold: #d4a338;
+            --gold-light: #f6e7c1;
+            --bg: #f0f2f5;
+            --green: #198754;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #e6e9ef 0%, #cfd8e3 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .card {
+            background: #ffffff;
+            max-width: 520px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(14, 47, 86, 0.15);
+            overflow: hidden;
+            border-top: 8px solid var(--navy);
+            position: relative;
+        }
+
+        .header {
+            background-color: var(--navy);
+            color: white;
+            padding: 22px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--gold);
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.78rem;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 28px 25px;
+        }
+
+        /* Pantalla de carga / validación */
+        #loader-section {
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .spinner {
+            width: 55px;
+            height: 55px;
+            border: 5px solid var(--gold-light);
+            border-top: 5px solid var(--navy);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #status-text {
+            font-weight: 600;
+            color: var(--navy);
+            font-size: 0.95rem;
+        }
+
+        /* Resultado validado */
+        #result-section {
+            display: none;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge-verified {
+            background-color: #e8f5e9;
+            border: 2px solid var(--green);
+            color: var(--green);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .badge-verified svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--green);
+            flex-shrink: 0;
+        }
+
+        .badge-verified span {
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-group {
+            margin-bottom: 16px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+
+        .data-group:last-of-type {
+            border-bottom: none;
+        }
+
+        .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #777;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .value.highlight {
+            font-size: 1.25rem;
+            color: #091e38;
+        }
+
+        .quote-box {
+            background-color: #faf8f2;
+            border-left: 4px solid var(--gold);
+            padding: 12px 15px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #444;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+
+        /* Caja de firma centrada */
+        .signatures-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .sig-item {
+            background: white;
+            padding: 14px 25px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .sig-name {
+            font-weight: 700;
+            color: var(--navy);
+            font-size: 1rem;
+            margin-top: 4px;
+        }
+
+        .sig-role {
+            font-size: 0.72rem;
+            color: #666;
+        }
+
+        /* Botón centrado debajo */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-reverify {
+            width: 100%;
+            max-width: 300px;
+            padding: 13px 20px;
+            background-color: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: inherit;
+        }
+
+        .btn-reverify:hover {
+            background-color: #16447a;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #888;
+            padding: 15px;
+            background: #f9fafb;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="header">
+            <h1>VALIDADOR DE RECONOCIMIENTOS</h1>
+            <p>Registro Internacional del Talento Musical Dia Del Musico</p>
+        </div>
+
+        <div class="content">
+            <!-- Fase 1: Simulación de escaneo -->
+            <div id="loader-section">
+                <div class="spinner"></div>
+                <p id="status-text">Conectando con la base de datos musical...</p>
+            </div>
+
+            <!-- Fase 2: Certificado Validado -->
+            <div id="result-section">
+                <div class="badge-verified">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                    <span>DOCUMENTO 100% AUTÉNTICO</span>
+                </div>
+
+                <div class="data-group">
+                    <div class="label">Otorgado a</div>
+                    <div class="value highlight">Alexis Rodriguez Chavez.</div>
+                </div>
+
+                <div class="data-group">
+                    <div class="label">Reconocimiento Especial</div>
+                    <div class="value">Por Su Excelencia Musical</div>
+                </div>
+
+                <div class="quote-box">
+                    "Por su esfuerzo constante, su increíble oído y esa energía musical que logra levantarle el ánimo a cualquiera"
+                </div>
+
+                <div class="label" style="margin-top: 18px; text-align: center;">Firmas y Sellos Verificados</div>
+                
+                <div class="signatures-box">
+                    <div class="sig-item">
+                        <div class="sig-role">Firma Autógrafa Validada por la auténtica</div>
+                        <div class="sig-name">Fer Baez</div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button class="btn-reverify" onclick="celebrar()">Aplausos para el músico</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Verificado criptográficamente por el Comité del dia del músico • Hash: musica
+        </div>
+    </div>
+
+    <!-- Librería ligera de confeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        const steps = [
+            "Conectando con la base de datos musical...",
+            "Analizando nivel de talento con la guitarra y canto...",
+            "Confirmando firma de Fer Baez..."
+        ];
+
+        let currentStep = 0;
+        const statusText = document.getElementById("status-text");
+        const loaderSection = document.getElementById("loader-section");
+        const resultSection = document.getElementById("result-section");
+
+        function runVerification() {
+            const interval = setInterval(() => {
+                currentStep++;
+                if (currentStep < steps.length) {
+                    statusText.textContent = steps[currentStep];
+                } else {
+                    clearInterval(interval);
+                    loaderSection.style.display = "none";
+                    resultSection.style.display = "block";
+                    celebrar();
+                }
+            }, 850);
+        }
+
+        function celebrar() {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#0e2f56', '#d4a338', '#198754']
+            });
+        }
+
+        window.onload = runVerification;
+    </script>
+</body>
+
+</html>
